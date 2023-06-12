@@ -4,16 +4,25 @@ import { fetchAllUser } from "../services/UserService";
 import * as React from "react";
 import { Pagination, Stack } from "@mui/material";
 import ModalAddNew from "./ModalAddNew";
+import ModalEditUser from "./ModalEditUser";
+import ModalDeleteUser from "./ModalDeleteUser";
+import _ from "lodash";
 
 function TableUser() {
   const [listUsers, setListUsers] = useState([]);
   const [totals, setTotals] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [dataUsers, setDataUsers] = useState({});
 
-  const [showModal, setShowModal] = useState(false);
-  const handleAddClick = () => {
-    setShowModal(false);
+  const [showModalAdd, setShowModalAdd] = useState(false);
+  const [showModalEdit, setShowModalEdit] = useState(false);
+  const [showModalDelete, setShowModalDelete] = useState(false);
+
+  const handleCloseClick = () => {
+    setShowModalAdd(false);
+    setShowModalEdit(false);
+    setShowModalDelete(false);
   };
 
   useEffect(() => {
@@ -30,13 +39,42 @@ function TableUser() {
   };
 
   const handleChange = (event, value) => {
-    console.log(value);
     setCurrentPage(value);
   };
 
   const handleUpdate = (user) => {
     setListUsers([user, ...listUsers]);
   };
+
+  const handleEditUser = (user) => {
+    setShowModalEdit(true);
+    setDataUsers(user);
+  };
+
+  const handleDeleteUser = (user) => {
+    // console.log(user);
+    setShowModalDelete(true);
+    setDataUsers(user);
+  };
+
+  const handleGetIdUsers = (user) => {
+    let cloneListUsers = _.cloneDeep(listUsers);
+    let indexListUsers = listUsers.findIndex((item) => item.id === user.id);
+    cloneListUsers[indexListUsers].first_name = user.first_name;
+    setListUsers(cloneListUsers);
+  };
+
+  const handleDeleteIdUsers = (user) => {
+    let cloneListUsers = _.cloneDeep(listUsers);
+    // C1:
+    let indexListUsers = listUsers.findIndex((item) => item.id === user.id);
+    cloneListUsers.splice([indexListUsers], 1);
+    // C2:
+    // cloneListUsers = cloneListUsers.filter((item) => item.id !== user.id);
+    // End:
+    setListUsers(cloneListUsers);
+  };
+
   return (
     <>
       <div className="my-3 d-flex justify-content-between">
@@ -44,7 +82,7 @@ function TableUser() {
         <button
           type="button"
           className="btn btn-primary"
-          onClick={() => setShowModal(true)}
+          onClick={() => setShowModalAdd(true)}
         >
           Add new user
         </button>
@@ -52,10 +90,23 @@ function TableUser() {
       <Table striped bordered hover>
         <thead>
           <tr>
-            <th>ID</th>
+            <th className="sort-header d-flex justify-content-between ">
+              <span>ID</span>
+              <span>
+                <i className="fa-solid fa-sort-down"></i>
+                <i className="fa-solid fa-sort-up"></i>
+              </span>
+            </th>
             <th>Email</th>
-            <th>First name</th>
+            <th className="sort-header d-flex justify-content-between ">
+              <span>First name</span>
+              <span>
+                <i className="fa-solid fa-sort-down"></i>
+                <i className="fa-solid fa-sort-up"></i>
+              </span>
+            </th>
             <th>Last name</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -68,6 +119,20 @@ function TableUser() {
                   <td>{item.email}</td>
                   <td>{item.first_name}</td>
                   <td>{item.last_name}</td>
+                  <td>
+                    <button
+                      className="btn btn-warning mx-3"
+                      onClick={() => handleEditUser(item)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="btn btn-danger"
+                      onClick={() => handleDeleteUser(item)}
+                    >
+                      Delete
+                    </button>
+                  </td>
                 </tr>
               );
             })}
@@ -82,9 +147,24 @@ function TableUser() {
         />
       </Stack>
       <ModalAddNew
-        show={showModal}
-        handleClose={handleAddClick}
+        show={showModalAdd}
+        handleClose={handleCloseClick}
         handleUpdate={handleUpdate}
+      />
+      <ModalEditUser
+        show={showModalEdit}
+        handleClose={handleCloseClick}
+        data={dataUsers}
+        handleEdit={handleEditUser}
+        handleGetIdUsers={handleGetIdUsers}
+      />
+
+      <ModalDeleteUser
+        show={showModalDelete}
+        handleClose={handleCloseClick}
+        data={dataUsers}
+        handleDelete={handleDeleteUser}
+        handleDeleteIdUsers={handleDeleteIdUsers}
       />
     </>
   );
