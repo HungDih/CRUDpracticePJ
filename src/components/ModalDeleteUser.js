@@ -26,7 +26,6 @@ function ModalDeleteUser(props) {
     }
   }, [data]);
 
-  // console.log(data);
 
   return (
     <div
